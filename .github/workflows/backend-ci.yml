@@ -1,0 +1,32 @@
+# 后端 CI（Spring Boot / Maven / Java 17）
+# 触发：push 到 master、PR 到 master。PR 阶段必须全绿才能合并。
+name: backend-ci
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Compile
+        run: mvn -q compile
+
+      - name: Unit test
+        run: mvn -q test
+
+      # 打包：PR 阶段可选，主干阶段必过
+      # - name: Package
+      #   run: mvn -q package -DskipTests
