@@ -120,11 +120,19 @@ public class SysDictDataServiceImpl implements ISysDictDataService
     @Override
     public int updateDictData(SysDictData data)
     {
+        SysDictData oldData = selectDictDataById(data.getDictCode());
         int row = dictDataMapper.updateDictData(data);
         if (row > 0)
         {
             List<SysDictData> dictDatas = dictDataMapper.selectDictDataByType(data.getDictType());
             DictUtils.setDictCache(data.getDictType(), dictDatas);
+            // 跨类型移动时，旧类型缓存也要刷新，避免残留已挪走的数据
+            if (StringUtils.isNotNull(oldData) && !StringUtils.equals(oldData.getDictType(), data.getDictType()))
+            {
+                List<SysDictData> oldDatas = dictDataMapper.selectDictDataByType(oldData.getDictType());
+                DictUtils.setDictCache(oldData.getDictType(), oldDatas);
+            }
+
         }
         return row;
     }
