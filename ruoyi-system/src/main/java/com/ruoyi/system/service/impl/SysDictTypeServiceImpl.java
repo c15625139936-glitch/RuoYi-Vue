@@ -197,6 +197,11 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService
         int row = dictTypeMapper.updateDictType(dict);
         if (row > 0)
         {
+            // 类型标识改名后，清除旧类型缓存，避免残留脏数据
+            if (!StringUtils.equals(oldDict.getDictType(), dict.getDictType()))
+            {
+                DictUtils.removeDictCache(oldDict.getDictType());
+            }
             List<SysDictData> dictDatas = dictDataMapper.selectDictDataByType(dict.getDictType());
             DictUtils.setDictCache(dict.getDictType(), dictDatas);
         }
