@@ -14,6 +14,8 @@ import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.system.domain.SysConfig;
 import com.ruoyi.system.mapper.SysConfigMapper;
 import com.ruoyi.system.service.ISysConfigService;
+import com.ruoyi.system.validator.SysConfigValidator;
+
 
 /**
  * 参数配置 服务层实现
@@ -114,6 +116,7 @@ public class SysConfigServiceImpl implements ISysConfigService
     @Override
     public int insertConfig(SysConfig config)
     {
+        SysConfigValidator.validateConfigKey(config.getConfigKey());
         int row = configMapper.insertConfig(config);
         if (row > 0)
         {
@@ -131,6 +134,7 @@ public class SysConfigServiceImpl implements ISysConfigService
     @Override
     public int updateConfig(SysConfig config)
     {
+        SysConfigValidator.validateConfigKey(config.getConfigKey());
         SysConfig temp = configMapper.selectConfigById(config.getConfigId());
         if (!StringUtils.equals(temp.getConfigKey(), config.getConfigKey()))
         {
