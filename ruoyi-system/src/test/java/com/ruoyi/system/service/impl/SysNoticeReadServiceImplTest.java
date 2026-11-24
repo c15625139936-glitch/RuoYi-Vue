@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.ruoyi.system.domain.SysNotice;
 import com.ruoyi.system.domain.SysNoticeRead;
+import com.ruoyi.system.flag.FeatureFlagService;
 import com.ruoyi.system.mapper.SysNoticeReadMapper;
 
 import java.util.Collections;
@@ -21,14 +22,20 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * SysNoticeReadServiceImpl 首批单元测试。
- * Mapper 全部 Mock，不连数据库；验证落库、空参短路、透传逻辑。
+ * SysNoticeReadServiceImpl 单元测试。
+ * Mapper 全部 Mock，不连数据库；验证落库、空参短路、透传、flag 包裹逻辑。
  */
 @ExtendWith(MockitoExtension.class)
 class SysNoticeReadServiceImplTest {
 
+    /** 与 SysNoticeReadServiceImpl 中保持一致的 flag key */
+    private static final String FLAG_NOTICE_NEW_READ_VIEW = "notice.new-read-view";
+
     @Mock
     private SysNoticeReadMapper noticeReadMapper;
+
+    @Mock
+    private FeatureFlagService featureFlagService;
 
     @InjectMocks
     private SysNoticeReadServiceImpl service;
@@ -76,5 +83,22 @@ class SysNoticeReadServiceImplTest {
         Long[] ids = {1L, 2L};
         service.deleteByNoticeIds(ids);
         verify(noticeReadMapper).deleteByNoticeIds(ids);
+    }
+
+    @Test
+    void getUnreadBadgeCount_flagOff_shouldReturnZeroAndNotHitMapper() {
+        when(featureFlagService.isOn(FLAG_NOTICE_NEW_READ_VIEW, 100L)).thenReturn(false);
+
+        assertEquals(0, service.getUnreadBadgeCount(100L));
+
+        verify(noticeReadMapper, never()).selectUnreadCount(anyLong());
+    }
+
+    @Test
+    void getUnreadBadgeCount_flagOn_shouldPassThroughUnreadCount() {
+        when(featureFlagService.isOn(FLAG_NOTICE_NEW_READ_VIEW, 100L)).thenReturn(true);
+        when(noticeReadMapper.selectUnreadCount(100L)).thenReturn(5);
+
+        assertEquals(5, service.getUnreadBadgeCount(100L));
     }
 }

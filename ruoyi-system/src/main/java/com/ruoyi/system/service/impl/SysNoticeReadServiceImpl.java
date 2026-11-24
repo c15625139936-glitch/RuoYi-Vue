@@ -1,5 +1,6 @@
 package com.ruoyi.system.service.impl;
 
+import com.ruoyi.system.flag.FeatureFlagService;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,13 @@ public class SysNoticeReadServiceImpl implements ISysNoticeReadService
 {
     @Autowired
     private SysNoticeReadMapper noticeReadMapper;
+
+    @Autowired
+    private FeatureFlagService featureFlagService;
+
+    /** 新公告已读视图角标开关 key */
+    private static final String FLAG_NOTICE_NEW_READ_VIEW = "notice.new-read-view";
+
 
     /**
      * 标记已读
@@ -40,6 +48,20 @@ public class SysNoticeReadServiceImpl implements ISysNoticeReadService
     {
         return noticeReadMapper.selectUnreadCount(userId);
     }
+
+    /**
+     * 获取未读角标数量：flag 关闭返回 0，开启才查库
+     */
+    @Override
+    public int getUnreadBadgeCount(Long userId)
+    {
+        if (!featureFlagService.isOn(FLAG_NOTICE_NEW_READ_VIEW, userId))
+        {
+            return 0;
+        }
+        return noticeReadMapper.selectUnreadCount(userId);
+    }
+
 
     /**
      * 查询公告列表并标记当前用户已读状态

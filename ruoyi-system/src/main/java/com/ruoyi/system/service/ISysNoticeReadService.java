@@ -27,6 +27,15 @@ public interface ISysNoticeReadService
      */
     public int selectUnreadCount(Long userId);
 
+        /**
+     * 获取当前用户未读公告角标数量（受 feature flag 控制，关闭时返回 0）
+     *
+     * @param userId 用户ID
+     * @return 未读角标数量
+     */
+    public int getUnreadBadgeCount(Long userId);
+
+
     /**
      * 查询公告列表并标记当前用户已读状态（用于首页展示）
      *

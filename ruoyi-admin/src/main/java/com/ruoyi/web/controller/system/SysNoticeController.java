@@ -99,6 +99,19 @@ public class SysNoticeController extends BaseController
     }
 
     /**
+     * 获取当前用户未读公告角标数量（新公告视图，flag 控制）
+     */
+    @GetMapping("/unreadCount")
+    @ResponseBody
+    public AjaxResult unreadCount()
+    {
+        Long userId = getUserId();
+        int count = noticeReadService.getUnreadBadgeCount(userId);
+        return success(count);
+    }
+
+
+    /**
      * 标记公告已读
      */
     @PostMapping("/markRead")
